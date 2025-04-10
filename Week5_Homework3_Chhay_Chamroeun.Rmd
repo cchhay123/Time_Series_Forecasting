@@ -1,0 +1,138 @@
+---
+title: "Homework_3_Codes"
+author: "Chamroeun Chhay"
+date: "2025-02-11"
+output: html_document
+---
+
+```{r}
+library(forecast)
+library(readxl)
+library(ggplot2)
+walmart <- read_excel("./data/WalMartStock.xls")
+
+plot.ts(diff(walmart$Close))
+```
+```{r}
+fit <-Arima(walmart$Close, order=c(1,0,0))
+
+fit2 <-Arima(diff(walmart$Close, 1), order=c(1,0,0))
+
+summary(fit)
+
+summary(fit2)
+
+Acf(walmart$Close, lag.max = 12, main = "")
+
+Acf(diff(walmart$Close), lag.max = 12, main = "")
+```
+
+```{r}
+a <- 0.956
+b <- 0.019
+
+t <- (a-1)/b
+
+p_value <- pt(t, df = length(walmart$Close) - 2, lower.tail = TRUE)
+round(p_value, 3)
+```
+
+```{r}
+library(tseries)
+adf.test(walmart$Close)
+```
+
+
+```{r}
+sales.df <- read_excel("./data/SouvenirSales.xls")
+
+sales.ts <- ts(sales.df$Sales, start = c(1995, 1), end = c(2001, 12), freq = 12)
+
+nValid <- 12
+
+nTrain <- length(sales.ts) - nValid
+
+train.ts <- window(sales.ts, start = c(1995, 1), end = c(1995, nTrain))
+
+valid.ts <- window(sales.ts, start = c(1995, nTrain + 1), end = c(1995, nTrain + nValid))
+```
+
+
+```{r}
+train.lm.B<- tslm(train.ts ~ trend + season, lambda = 0)
+
+train.forecast <- forecast(train.lm.B, h = nValid, level = 0)
+
+train.forecast
+
+```
+
+```{r}
+train.arima <-auto.arima(train.ts)
+
+arimo_forecast <- forecast(train.arima, h = nValid, level = 0)
+
+arimo_forecast
+
+```
+```{r}
+train.arima.log <-auto.arima(train.ts, lambda=0)
+
+logarimo_forecast <- forecast(train.arima.log, h = nValid, level = 0)
+
+logarimo_forecast
+
+```
+```{r}
+accuracy(train.forecast, valid.ts)
+accuracy(arimo_forecast, valid.ts)
+accuracy(logarimo_forecast, valid.ts)
+```
+
+```{r}
+lm.B<- tslm(sales.ts ~ trend + season, lambda = 0)
+
+forecast(lm.B, h = nValid, level = 0)
+
+
+```
+```{r}
+arima.log <- auto.arima(sales.ts, lambda = 0)
+
+forecast(arima.log, h = nValid, level = 0)
+
+```
+```{r}
+DepartmentStoreSales.data <- read.csv("./data/DepartmentStoreSales.csv")
+head(DepartmentStoreSales.data)
+DeptStoreSales.ts <- ts(DepartmentStoreSales.data$Sales, freq= 4,start = c(1,1))
+
+nValid <- 4
+nTrain <- length(DeptStoreSales.ts) - nValid
+
+DeptStoreSales.train.ts <- window(DeptStoreSales.ts, start = c(1,1), end=c(1,nTrain))
+DeptStoreSales.valid.ts <- window(DeptStoreSales.ts, start = c(1, nTrain+1), end = c(1, nTrain + nValid))
+ 
+```
+```{r}
+ets.hw <- ets(DeptStoreSales.train.ts, restrict =FALSE, model = 'AAM', alpha = 0.2, beta = 0.15, gamma = 0.05)
+ets.hw.pred <- forecast(ets.hw, h = nValid, level = 0)
+
+ets.hw.pred
+
+
+
+```
+
+```{r}
+arima.dept <- arima(DeptStoreSales.train.ts, order = c(1, 1, 1), seasonal = list(order = c(1, 0, 1)))
+arima.dept.pred <- forecast(arima.dept, h = nValid, level = 0)
+
+arima.dept.pred
+```
+
+```{r}
+accuracy(ets.hw.pred, DeptStoreSales.valid.ts)
+accuracy(arima.dept.pred, DeptStoreSales.valid.ts)
+```
+

@@ -1,0 +1,57 @@
+---
+title: "Week1_Homework_Chhay_Chamroeun"
+author: "Chamroeun Chhay"
+date: "2025-01-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Library in the package to read excel file
+
+```{r}
+library(readxl)
+library(forecast)
+sep11_data <- read_excel("./data/Sept11Travel.xls")
+head(sep11_data)
+tail(sep11_data)
+```
+
+## Plotting for different Time Series 
+
+```{r}
+auto.ts <- ts(sep11_data$`VMT (billions)`, start = c(1990, 1), end = c(2004, 4), freq = 12)
+plot(auto.ts)
+
+air.ts <- ts(sep11_data$`Air RPM (000s)`, start = c(1990, 1), end = c(2004, 4), freq = 12)
+plot(air.ts)
+
+rail.ts <- ts(sep11_data$`Rail PM`, start = c(1990, 1), end = c(2004, 4), freq = 12)
+plot(rail.ts)
+
+```
+```{r}
+souvenir<-read_excel("./data/SouvenirSales.xls")
+
+sales.ts <- ts(souvenir$Sales, start = c(1995, 1), end = c(2001,12), freq = 12)
+
+plot(sales.ts, xlab = "Date", ylab = "Sales")
+
+```
+```{r}
+sales.ts <- ts(souvenir$Sales, start = c(1995,1), end = c(2001,12), freq = 12)
+
+plot(sales.ts, xlab = "Date", ylab = "logSales",log="y") 
+```
+```{r}
+monthly.sales.ts <- tapply(sales.ts, cycle(sales.ts), mean)
+plot(monthly.sales.ts, type='l', xaxt='n')
+axis(1, at = c(1:12), label = c('Jan', 'Feb', 'Mar', 'Apr','May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'))
+```
+```{r}
+souvenir.ts <- tapply(sales.ts, cycle(sales.ts), mean)
+souvenir.ts
+```
+
